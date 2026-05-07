@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.log
+.compliance-cache/
+.compliance-artifacts/
+
+# Generated when the orchestrator scans this very repo (self-audit):
+compliance.sarif
+compliance-comment.md
+compliance-dossier.json
+
+.DS_Store
+.idea/
+.vscode/
+*.tsbuildinfo
+coverage/

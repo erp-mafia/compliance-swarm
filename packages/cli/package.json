@@ -1,0 +1,81 @@
+{
+  "name": "compliance-swarm",
+  "version": "0.1.0",
+  "description": "Multi-framework compliance orchestrator (OSS-license, OWASP ASVS, ISO 27001, SOC 2, GDPR) for repo and CI/CD.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/erp-mafia/compliance-swarm#readme",
+  "bugs": "https://github.com/erp-mafia/compliance-swarm/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erp-mafia/compliance-swarm.git",
+    "directory": "packages/cli"
+  },
+  "keywords": [
+    "compliance",
+    "soc2",
+    "iso27001",
+    "gdpr",
+    "owasp",
+    "asvs",
+    "sast",
+    "sbom",
+    "ci",
+    "audit",
+    "sarif"
+  ],
+  "type": "module",
+  "main": "./dist/src/orchestrator.js",
+  "types": "./dist/src/orchestrator.d.ts",
+  "bin": {
+    "compliance-swarm": "./dist/bin/compliance-swarm.js"
+  },
+  "files": [
+    "dist",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/orchestrator.d.ts",
+      "import": "./dist/src/orchestrator.js"
+    },
+    "./schema": {
+      "types": "./dist/src/findings/schema.d.ts",
+      "import": "./dist/src/findings/schema.js"
+    },
+    "./manifest": {
+      "types": "./dist/src/skills/manifest.d.ts",
+      "import": "./dist/src/skills/manifest.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx bin/compliance-swarm.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@anthropic-ai/bedrock-sdk": "^0.29.0",
+    "@anthropic-ai/sdk": "^0.95.0",
+    "fast-glob": "^3.3.2",
+    "minimatch": "^10.0.0",
+    "yaml": "^2.6.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

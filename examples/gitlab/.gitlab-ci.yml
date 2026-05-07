@@ -1,0 +1,52 @@
+stages:
+  - compliance
+
+variables:
+  COMPLIANCE_CACHE_DIR: $CI_PROJECT_DIR/.compliance-cache
+
+compliance:pr:
+  stage: compliance
+  image: node:22-bullseye
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  cache:
+    key:
+      files:
+        - package-lock.json
+        - requirements.txt
+        - go.sum
+        - Cargo.lock
+    paths:
+      - $COMPLIANCE_CACHE_DIR
+  before_script:
+    - cd .claude/skills/compliance-swarm
+    - npm ci
+  script:
+    - npx tsx bin/compliance-swarm.ts run --mode pr --base "$CI_MERGE_REQUEST_DIFF_BASE_SHA" --no-llm
+  artifacts:
+    when: always
+    paths:
+      - compliance.sarif
+      - compliance-dossier.json
+      - compliance-comment.md
+    expire_in: 14 days
+    reports:
+      sast: compliance.sarif
+
+compliance:swarm:
+  stage: compliance
+  image: node:22-bullseye
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $RUN_COMPLIANCE_SWARM == "true"'
+  before_script:
+    - cd .claude/skills/compliance-swarm
+    - npm ci
+  script:
+    - npx tsx bin/compliance-swarm.ts run --mode swarm
+  artifacts:
+    when: always
+    paths:
+      - compliance-dossier.json
+      - compliance.sarif
+    expire_in: 90 days

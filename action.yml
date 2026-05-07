@@ -1,0 +1,164 @@
+name: 'compliance-swarm'
+description: 'Multi-framework compliance orchestrator (OSS-license, OWASP ASVS, ISO 27001, SOC 2, GDPR) for repo and CI/CD.'
+author: 'erp-mafia'
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  mode:
+    description: 'pr | swarm — PR is fast deterministic; swarm adds LLM deep audit.'
+    required: true
+    default: 'pr'
+  base:
+    description: 'Base SHA to diff against (PR-mode only). Defaults to PR base on pull_request events.'
+    required: false
+    default: ''
+  config-path:
+    description: 'Path to .compliance/config.yml (relative to repo root).'
+    required: false
+    default: '.compliance/config.yml'
+  no-llm:
+    description: 'Skip LLM deep_audit even in swarm mode.'
+    required: false
+    default: 'false'
+  llm-provider:
+    description: 'LLM provider for swarm-mode deep audits: bedrock | anthropic.'
+    required: false
+    default: 'bedrock'
+  upload-sarif:
+    description: 'Upload SARIF to GitHub Code Scanning.'
+    required: false
+    default: 'true'
+  upload-dossier:
+    description: 'Upload the JSON dossier as a workflow artifact.'
+    required: false
+    default: 'true'
+  post-comment:
+    description: 'Post / update a sticky PR comment with the markdown summary.'
+    required: false
+    default: 'true'
+  fail-on-findings:
+    description: 'Exit non-zero on blocking findings. Set to false for advisory-only.'
+    required: false
+    default: 'true'
+  working-directory:
+    description: 'Repo directory to scan.'
+    required: false
+    default: '.'
+
+outputs:
+  exit-code:
+    description: '0 clean | 1 blocking findings or expired suppressions | 2 internal error.'
+    value: ${{ steps.run.outputs.exit-code }}
+  sarif-path:
+    description: 'Absolute path to the generated SARIF file.'
+    value: ${{ steps.run.outputs.sarif-path }}
+  dossier-path:
+    description: 'Absolute path to the JSON dossier.'
+    value: ${{ steps.run.outputs.dossier-path }}
+  findings-total:
+    description: 'Total finding count.'
+    value: ${{ steps.run.outputs.findings-total }}
+  findings-blocking:
+    description: 'Blocking finding count.'
+    value: ${{ steps.run.outputs.findings-blocking }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Node.js 22
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Install orchestrator
+      shell: bash
+      working-directory: ${{ github.action_path }}/packages/cli
+      run: |
+        if [ -f package-lock.json ]; then
+          npm ci --no-audit --no-fund
+        else
+          npm install --no-audit --no-fund
+        fi
+
+    - name: Restore SBOM cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/.compliance-cache
+        key: compliance-sbom-${{ hashFiles('**/package-lock.json','**/yarn.lock','**/pnpm-lock.yaml','**/requirements.txt','**/go.sum','**/Cargo.lock','**/Gemfile.lock','**/composer.lock') }}
+        restore-keys: |
+          compliance-sbom-
+
+    - name: Run compliance-swarm (${{ inputs.mode }})
+      id: run
+      shell: bash
+      env:
+        RUNNER_TEMP: ${{ runner.temp }}
+        COMPLIANCE_LLM_PROVIDER: ${{ inputs.llm-provider }}
+      run: |
+        set +e
+        cd "${{ inputs.working-directory }}"
+        ARGS=(run --mode "${{ inputs.mode }}" --config "${{ inputs.config-path }}")
+        if [ -n "${{ inputs.base }}" ]; then
+          ARGS+=(--base "${{ inputs.base }}")
+        elif [ "${{ github.event_name }}" = "pull_request" ]; then
+          ARGS+=(--base "${{ github.event.pull_request.base.sha }}")
+        fi
+        if [ "${{ inputs.no-llm }}" = "true" ] || [ "${{ inputs.mode }}" = "pr" ]; then
+          ARGS+=(--no-llm)
+        fi
+
+        node "${{ github.action_path }}/packages/cli/node_modules/.bin/tsx" \
+          "${{ github.action_path }}/packages/cli/bin/compliance-swarm.ts" "${ARGS[@]}"
+        EXIT=$?
+
+        echo "exit-code=$EXIT" >> "$GITHUB_OUTPUT"
+        echo "sarif-path=$PWD/compliance.sarif" >> "$GITHUB_OUTPUT"
+        echo "dossier-path=$PWD/compliance-dossier.json" >> "$GITHUB_OUTPUT"
+
+        if [ -f compliance-dossier.json ]; then
+          TOTAL=$(node -e "console.log(JSON.parse(require('fs').readFileSync('compliance-dossier.json','utf8')).summary.total)")
+          BLOCKING=$(node -e "console.log(JSON.parse(require('fs').readFileSync('compliance-dossier.json','utf8')).summary.blocking)")
+          echo "findings-total=$TOTAL" >> "$GITHUB_OUTPUT"
+          echo "findings-blocking=$BLOCKING" >> "$GITHUB_OUTPUT"
+        fi
+
+        # Surface exit code without failing the step here — the final step decides.
+        exit 0
+
+    - name: Upload SARIF to Code Scanning
+      if: ${{ inputs.upload-sarif == 'true' && always() }}
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ steps.run.outputs.sarif-path }}
+        category: compliance-swarm
+      continue-on-error: true
+
+    - name: Upload dossier artifact
+      if: ${{ inputs.upload-dossier == 'true' && always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: compliance-dossier-${{ inputs.mode }}-${{ github.run_attempt }}
+        path: |
+          ${{ steps.run.outputs.dossier-path }}
+          ${{ steps.run.outputs.sarif-path }}
+        retention-days: ${{ inputs.mode == 'swarm' && 90 || 14 }}
+
+    - name: Post sticky PR comment
+      if: ${{ inputs.post-comment == 'true' && github.event_name == 'pull_request' && always() }}
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        path: ${{ inputs.working-directory }}/compliance-comment.md
+        header: compliance-swarm-${{ inputs.mode }}
+      continue-on-error: true
+
+    - name: Enforce exit code
+      if: ${{ inputs.fail-on-findings == 'true' }}
+      shell: bash
+      run: |
+        EXIT=${{ steps.run.outputs.exit-code }}
+        if [ "$EXIT" != "0" ]; then
+          echo "::error::compliance-swarm exited with code $EXIT (${{ steps.run.outputs.findings-blocking }} blocking finding(s))"
+          exit "$EXIT"
+        fi

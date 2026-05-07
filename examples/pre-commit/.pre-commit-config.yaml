@@ -1,0 +1,14 @@
+# Add to your repo's .pre-commit-config.yaml. Runs PR-mode against staged files
+# only — keeps the local commit fast.
+repos:
+  - repo: local
+    hooks:
+      - id: compliance-swarm-pr
+        name: compliance-swarm (PR mode)
+        language: system
+        entry: bash -c 'cd .claude/skills/compliance-swarm && npx tsx bin/compliance-swarm.ts run --mode pr --no-llm'
+        pass_filenames: false
+        # Run only when relevant files change so commits stay snappy.
+        files: |
+          ^(\.compliance/.*|.*\.tf|.*Dockerfile.*|.*compose.*|package(-lock)?\.json|requirements\.txt|go\.(mod|sum)|Cargo\.(toml|lock)|.*\.(ts|tsx|js|jsx|py|rb|go|rs|java)$)
+        stages: [pre-push]

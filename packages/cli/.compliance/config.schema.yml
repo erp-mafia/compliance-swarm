@@ -1,0 +1,85 @@
+# JSON-Schema (YAML form) for .compliance/config.yml. Editor-loadable via
+# `# yaml-language-server: $schema=./.compliance/config.schema.yml`.
+
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://github.com/erp-mafia/erp-base/.compliance/config.schema.yml
+title: compliance-swarm config
+type: object
+additionalProperties: false
+
+properties:
+  enabled_skills:
+    type: array
+    items: { type: string }
+    default:
+      - oss-license-compliance
+      - owasp-asvs-v5-compliance
+      - iso-27001-2022-compliance
+      - soc2-cicd-compliance
+      - gdpr-cicd-compliance
+
+  asvs_level:
+    type: string
+    enum: [L1, L2, L3]
+    default: L2
+
+  soc2_categories:
+    type: array
+    items:
+      type: string
+      enum: [security, availability, confidentiality, processing_integrity, privacy]
+    default: [security]
+
+  gdpr_jurisdiction_supplements:
+    type: array
+    items: { type: string }
+    default: []
+
+  severity_threshold_to_block:
+    type: string
+    enum: [critical, high, medium, low, info]
+    default: high
+
+  llm_provider:
+    type: string
+    enum: [bedrock, anthropic]
+    default: bedrock
+
+  llm_model:
+    type: string
+    default: claude-sonnet-4-6
+
+  artifact_dir:
+    type: string
+    default: .compliance-artifacts
+
+  pr_comment_path:
+    type: string
+    default: compliance-comment.md
+
+  sarif_path:
+    type: string
+    default: compliance.sarif
+
+  dossier_path:
+    type: string
+    default: compliance-dossier.json
+
+  suppressions:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required: [control_ref, path, justification]
+      properties:
+        id: { type: string }
+        control_ref: { type: string }
+        path: { type: string, description: 'Glob, e.g. "extensions/foo/**".' }
+        justification: { type: string, minLength: 1 }
+        expires:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+        risk_id:
+          type: string
+          description: 'Required for ISO 27001 and SOC 2 control suppressions.'
+    default: []

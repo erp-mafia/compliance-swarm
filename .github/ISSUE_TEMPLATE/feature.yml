@@ -1,0 +1,19 @@
+name: Feature request
+description: New scanner, new framework, new CI integration, new finding shape.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Lead with the user pain, not the proposed implementation.
+    validations: { required: true }
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What would the new behavior look like? Mock CLI / config / output if relevant.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

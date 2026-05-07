@@ -1,0 +1,10 @@
+compliance-swarm
+Copyright 2026 erp-mafia and contributors
+
+This product includes software developed by erp-mafia (https://github.com/erp-mafia)
+and is licensed under the Apache License, Version 2.0.
+
+Bundled compliance skills (packages/skills/*) include knowledge bases referencing
+public standards (OWASP ASVS v5, ISO/IEC 27001:2022, AICPA SOC 2 TSP 100,
+EU Reg. 2016/679 GDPR, SPDX License List). The skill text describes those
+standards; it is not a substitute for the standards themselves.

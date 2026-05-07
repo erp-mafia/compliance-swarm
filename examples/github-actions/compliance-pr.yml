@@ -1,0 +1,36 @@
+# Drop this file into .github/workflows/ — runs on every PR.
+# Uses the published GitHub Action; no Node setup needed in your repo.
+
+name: compliance — PR mode
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+concurrency:
+  group: compliance-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compliance:
+    name: PR static checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # need history for git diff against base
+
+      - uses: erp-mafia/compliance-swarm@v1
+        with:
+          mode: pr
+          base: ${{ github.event.pull_request.base.sha }}
+          # severity-threshold: high       # override config.yml from CI
+          # config-path: .compliance/config.yml
+          # post-comment: true             # default true

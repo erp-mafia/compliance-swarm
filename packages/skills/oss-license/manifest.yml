@@ -1,0 +1,148 @@
+# Skill manifest for oss-license-compliance.
+# Runs FIRST in the orchestrator graph; produces the SBOM artifact that ASVS,
+# ISO 27001, SOC 2, and GDPR consume for SCA / supply-chain checks.
+
+id: oss-license-compliance
+version: 1.0.0
+description: License risk, SBOM generation, copyleft contamination, ISO 5230 OpenChain alignment.
+
+detection:
+  paths:
+    - "**/package.json"
+    - "**/package-lock.json"
+    - "**/yarn.lock"
+    - "**/pnpm-lock.yaml"
+    - "**/requirements.txt"
+    - "**/Pipfile.lock"
+    - "**/pyproject.toml"
+    - "**/go.mod"
+    - "**/go.sum"
+    - "**/Cargo.toml"
+    - "**/Cargo.lock"
+    - "**/composer.json"
+    - "**/Gemfile.lock"
+    - "**/pom.xml"
+    - "**/build.gradle*"
+    - ".ort.yml"
+    - ".reuse/dep5"
+    - "REUSE.toml"
+    - "LICENSES/**"
+    - "NOTICE"
+
+produces:
+  - name: sbom
+    format: cyclonedx-json
+    path: ${OUT}
+
+consumes: []
+
+static_scan:
+  - id: scancode
+    tool: docker
+    image: ghcr.io/aboutcode-org/scancode-toolkit:latest
+    args:
+      - "scancode"
+      - "--license"
+      - "--copyright"
+      - "--package"
+      - "--info"
+      - "--json"
+      - "${OUT}"
+      - "${REPO}"
+    parser: scancode
+    timeout_seconds: 240
+    pr_mode_enabled: true
+    failure_action: warn
+
+  - id: ort-analyze
+    tool: docker
+    image: ghcr.io/oss-review-toolkit/ort:latest
+    args: ["analyze", "-i", "${REPO}", "-o", "${ARTIFACT_DIR}/ort"]
+    parser: ort
+    timeout_seconds: 300
+    pr_mode_enabled: false      # too slow for PR; swarm-only
+    swarm_mode_enabled: true
+    output_format: json
+    failure_action: warn
+
+  - id: ort-evaluate
+    tool: docker
+    image: ghcr.io/oss-review-toolkit/ort:latest
+    args:
+      - "evaluate"
+      - "-i"
+      - "${ARTIFACT_DIR}/ort"
+      - "-o"
+      - "${OUT}"
+      - "--rules"
+      - "${REPO}/rules.kts"
+    parser: ort
+    timeout_seconds: 60
+    pr_mode_enabled: false
+    swarm_mode_enabled: true
+    failure_action: warn
+
+  - id: reuse-lint
+    tool: docker
+    image: fsfe/reuse:latest
+    args: ["lint", "--json"]
+    parser: sarif
+    timeout_seconds: 60
+    pr_mode_enabled: true
+    output_format: json
+    failure_action: warn
+
+deep_audit:
+  - id: agpl-network-use
+    prompt_file: references/agentic-prompts.md
+    section: "AGPL §13 network-use"
+    inputs:
+      - changed_files
+      - sbom
+      - "Dockerfile"
+      - "docker-compose*.yml"
+      - "k8s/**/*.yaml"
+      - "README.md"
+      - "ARCHITECTURE.md"
+    max_input_chars: 100000
+
+  - id: sspl-service-source-code
+    prompt_file: references/agentic-prompts.md
+    section: "SSPL §13"
+    inputs:
+      - sbom
+      - "Dockerfile"
+      - "docker-compose*.yml"
+      - "README.md"
+
+  - id: bsl-competitive-offering
+    prompt_file: references/agentic-prompts.md
+    section: "BSL 1.1"
+    inputs:
+      - sbom
+      - "README.md"
+
+finding_extraction:
+  framework: oss-license
+  default_severity_mapping:
+    ERROR: critical
+    WARNING: high
+    HINT: low
+  cross_framework:
+    - { tag: "NIST 800-53", control: "CM-8" }
+    - { tag: "NIST 800-53", control: "SR-3" }
+    - { tag: "ISO 27001:2022", control: "A.5.21" }
+    - { tag: "ISO 27001:2022", control: "A.8.30" }
+    - { tag: "SOC 2", control: "CC9.2" }
+    - { tag: "CIS v8", control: "2.1" }
+    - { tag: "OpenChain ISO 5230", control: "3.5" }
+
+suppression:
+  config_file: ".ort.yml"
+  inline_pragma: null
+
+out_of_repo:
+  - "End-user-facing attribution UI presence (Apache 2.0 §4(d), MIT)"
+  - "Vendor contract OSS warranties / commercial supplier indemnification"
+  - "M&A / cyber insurance OSS warranties"
+  - "Shadow SaaS / OAuth-app inventory"

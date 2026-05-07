@@ -1,0 +1,38 @@
+name: Bug report
+description: Something the orchestrator does (or doesn't do) that you think is wrong.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: One paragraph. The bug, not the cause.
+    validations: { required: true }
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes:
+      label: How can someone reproduce it?
+      description: Repo URL, command, or minimal example. If private, link to a comparable public scenario or describe the shape of the failing input.
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes:
+      label: compliance-swarm version
+      placeholder: 'v1.2.3 / @v1 / git SHA'
+    validations: { required: true }
+  - type: input
+    id: mode
+    attributes:
+      label: Mode
+      placeholder: 'pr | swarm'
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Output of the failing run with `COMPLIANCE_LOG_LEVEL=debug` if possible. Redact secrets.
+      render: shell

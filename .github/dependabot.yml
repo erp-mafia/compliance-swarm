@@ -1,0 +1,24 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
+    groups:
+      type-defs:
+        patterns: ['@types/*']
+      dev-deps:
+        dependency-type: development
+
+  - package-ecosystem: npm
+    directory: /packages/cli
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
+    groups:
+      anthropic-sdks:
+        patterns: ['@anthropic-ai/*']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5

@@ -1,0 +1,133 @@
+# Skill manifest for ISO/IEC 27001:2022.
+# Deterministic IaC + dependency + secret scans, plus agentic ISMS Clause 4-10
+# and Annex A.5 (Organizational) review against policy markdown.
+
+id: iso-27001-2022-compliance
+version: 1.0.0
+description: ISO 27001:2022 controls (A.5/A.6/A.7/A.8) and ISMS clauses 4-10.
+
+detection:
+  always_applicable: true
+  paths:
+    - "**/*.tf"
+    - "**/*.yaml"
+    - "**/*.yml"
+    - "Dockerfile*"
+    - "docker-compose*.yml"
+    - "k8s/**"
+    - "ISMS/**"
+    - "soa.json"
+    - "soa.csv"
+    - ".compliance/**"
+
+consumes: ["sbom"]
+
+static_scan:
+  - id: checkov
+    tool: docker
+    image: bridgecrew/checkov:latest
+    args:
+      - "-d"
+      - "${REPO}"
+      - "-o"
+      - "json"
+      - "--soft-fail"
+      - "--quiet"
+    parser: checkov
+    timeout_seconds: 240
+    pr_mode_enabled: true
+
+  - id: trivy-iac
+    tool: docker
+    image: aquasec/trivy:latest
+    args:
+      - "config"
+      - "--format"
+      - "json"
+      - "--output"
+      - "${OUT}"
+      - "--severity"
+      - "HIGH,CRITICAL"
+      - "${REPO}"
+    parser: trivy
+    timeout_seconds: 180
+    pr_mode_enabled: true
+
+  - id: trivy-sbom-vuln
+    tool: docker
+    image: aquasec/trivy:latest
+    args:
+      - "sbom"
+      - "--format"
+      - "json"
+      - "--output"
+      - "${OUT}"
+      - "${ARTIFACT_SBOM}"
+    parser: trivy
+    timeout_seconds: 120
+    pr_mode_enabled: true
+    failure_action: warn          # only when SBOM artifact exists
+
+  - id: steampipe-cloud-state
+    tool: docker
+    image: turbot/steampipe:latest
+    args:
+      - "query"
+      - "--output"
+      - "json"
+      - "select * from aws_iam_policy where is_attached and is_aws_managed = false"
+    parser: sarif
+    timeout_seconds: 180
+    pr_mode_enabled: false        # cloud-API auth — swarm-only via OIDC
+    swarm_mode_enabled: true
+    failure_action: warn
+
+deep_audit:
+  - id: isms-clause-4-10
+    prompt_file: references/isms-clauses.md
+    inputs:
+      - "ISMS/**/*.md"
+      - "soa.*"
+      - ".compliance/Information_Security_Policy.md"
+
+  - id: annex-a5-organizational
+    prompt_file: references/annex-a-controls.md
+    section: "A.5"
+    inputs:
+      - "ISMS/**/*.md"
+      - ".compliance/Access_Control_Policy.md"
+      - ".compliance/Vendor_Management_Policy.md"
+
+  - id: soa-completeness
+    prompt_file: references/agentic-prompts.md
+    section: "Statement of Applicability"
+    inputs:
+      - "soa.*"
+      - ".compliance/risk_register.md"
+
+finding_extraction:
+  framework: iso-27001
+  default_severity_mapping:
+    CRITICAL: critical
+    HIGH: high
+    MEDIUM: medium
+    LOW: low
+    ERROR: high
+    WARNING: medium
+  cross_framework:
+    - { tag: "NIST 800-53", control: "SA-8" }
+    - { tag: "SOC 2", control: "CC6.1" }
+    - { tag: "SOC 2", control: "CC8.1" }
+    - { tag: "CIS v8", control: "3" }
+    - { tag: "CIS v8", control: "16" }
+
+suppression:
+  config_file: null
+  inline_pragma: "checkov:skip="
+  # Risk Register binding required — see config.suppressions[*].risk_id
+
+out_of_repo:
+  - "A.7.x Physical controls (badge access, server-room locks)"
+  - "A.6.1 Pre-employment screening"
+  - "A.6.4 Disciplinary process"
+  - "A.7.7 Clear desk / clear screen (audit observation, not technical)"
