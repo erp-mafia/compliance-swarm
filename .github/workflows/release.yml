@@ -28,7 +28,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          registry-url: 'https://registry.npmjs.org'
+          # Intentionally NO `registry-url` — that would write an .npmrc with
+          # `_authToken=${NODE_AUTH_TOKEN}` which collides with npm's OIDC
+          # trusted-publisher flow and causes a silent 404 on publish.
 
       - run: npm ci
 
