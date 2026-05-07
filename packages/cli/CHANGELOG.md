@@ -1,5 +1,11 @@
 # compliancemaxx
 
+## 1.0.1
+
+### Patch Changes
+
+- [`b4238ee`](https://github.com/erp-mafia/compliancemaxx/commit/b4238ee5e8ad30ce1b4534c5f57e5ea0f1706eee) Thanks [@jakobwennberg](https://github.com/jakobwennberg)! - `action.yml` now executes the published npm package via `npx -y compliancemaxx@$GITHUB_ACTION_REF` instead of installing the action's own checkout. This fixes a path-resolution bug: when the package was installed inside `packages/cli/` of the action's checkout, npm workspaces hoisted `tsx` to the root `node_modules/`, breaking the hardcoded path. Using the published package side-steps the problem and means consumers always run a tested release.
+
 ## 1.0.0
 
 ### Major Changes
