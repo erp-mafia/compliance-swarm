@@ -90,6 +90,10 @@ runs:
       env:
         RUNNER_TEMP: ${{ runner.temp }}
         COMPLIANCE_LLM_PROVIDER: ${{ inputs.llm-provider }}
+        # `github.action_ref` is the ref the user wrote (e.g. "v2", a SHA, or
+        # "main"). Composite actions don't always populate $GITHUB_ACTION_REF
+        # so we pass it explicitly via `with:` env.
+        COMPLIANCE_ACTION_REF: ${{ github.action_ref }}
       run: |
         set +e
         cd "${{ inputs.working-directory }}"
@@ -106,15 +110,22 @@ runs:
           *) [ "${{ inputs.no-llm }}" = "true" ] && ARGS+=(--no-llm) ;;
         esac
 
-        # Pin to the same release that owns this action.yml (the major-tag
-        # ref the consumer used). On `@v1`, GITHUB_ACTION_REF == "v1" — npx
-        # resolves the latest 1.x. On `@main` it falls back to "latest".
-        REF="${GITHUB_ACTION_REF:-latest}"
+        # This action.yml's npm pin. Bump on each major release of the package.
+        # The git tag `v2` captures THIS action.yml (with this pin), so consumers
+        # using `uses: erp-mafia/compliancemaxx@v2` get the v2 npm major. When
+        # we cut v3, action.yml here will pin to ^3.0.0 and the v3 git tag will
+        # capture that — leaving v2 consumers unaffected.
+        ACTION_NPM_PIN="^2.0.0"
+
+        # If user pinned to a specific version-like tag (e.g. compliancemaxx@v2.0.5
+        # via uses: ...@v2.0.5), respect that exact pin. Otherwise honour the
+        # action.yml's major-version pin above.
+        REF="${COMPLIANCE_ACTION_REF:-}"
         case "$REF" in
-          v[0-9]*) PKG_SPEC="compliancemaxx@$REF" ;;
-          *)       PKG_SPEC="compliancemaxx@latest" ;;
+          v[0-9]*.[0-9]*.[0-9]*) PKG_SPEC="compliancemaxx@${REF#v}" ;;  # exact version
+          *)                     PKG_SPEC="compliancemaxx@${ACTION_NPM_PIN}" ;;
         esac
-        echo "Using $PKG_SPEC"
+        echo "Using $PKG_SPEC (action ref: ${REF:-<none>})"
 
         npx -y "$PKG_SPEC" "${ARGS[@]}"
         EXIT=$?
