@@ -129,7 +129,7 @@ runs:
 
     - name: Upload SARIF to Code Scanning
       if: ${{ inputs.upload-sarif == 'true' && always() }}
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: ${{ steps.run.outputs.sarif-path }}
         category: compliance-swarm
