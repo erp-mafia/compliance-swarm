@@ -65,11 +65,11 @@ growing suppression lists.
 
 ## Catching expirations early
 
-Run `compliance-swarm validate-config` in CI on a daily schedule:
+Run `compliancemaxx validate-config` in CI on a daily schedule:
 
 ```yaml
 - uses: actions/checkout@v4
-- run: npx compliance-swarm validate-config
+- run: npx compliancemaxx validate-config
 ```
 
 Exits non-zero if any suppression has expired or will expire within 30 days.

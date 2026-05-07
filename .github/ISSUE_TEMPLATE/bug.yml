@@ -22,7 +22,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: compliance-swarm version
+      label: compliancemaxx version
       placeholder: 'v1.2.3 / @v1 / git SHA'
     validations: { required: true }
   - type: input

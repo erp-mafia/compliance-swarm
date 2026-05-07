@@ -57,5 +57,5 @@ jobs:
           MAJOR="v$(echo "$VERSION" | cut -d. -f1)"
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git tag -fa "$MAJOR" -m "compliance-swarm $MAJOR (-> $VERSION)"
+          git tag -fa "$MAJOR" -m "compliancemaxx $MAJOR (-> $VERSION)"
           git push origin "$MAJOR" --force

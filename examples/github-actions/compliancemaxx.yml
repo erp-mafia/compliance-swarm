@@ -41,7 +41,7 @@ jobs:
           role-to-assume: ${{ vars.COMPLIANCE_BEDROCK_ROLE_ARN }}
           aws-region: ${{ vars.COMPLIANCE_AWS_REGION || 'eu-north-1' }}
 
-      - uses: erp-mafia/compliance-swarm@v1
+      - uses: erp-mafia/compliancemaxx@v1
         with:
           mode: swarm
           # llm-provider: bedrock      # default; set to "anthropic" + ANTHROPIC_API_KEY secret to use direct API

@@ -13,8 +13,8 @@ Thanks for considering a contribution.
 ## Getting started
 
 ```sh
-git clone https://github.com/erp-mafia/compliance-swarm
-cd compliance-swarm
+git clone https://github.com/erp-mafia/compliancemaxx
+cd compliancemaxx
 npm install
 npm test
 ```
@@ -23,7 +23,7 @@ Inside `packages/cli/` you can run individual scripts:
 
 ```sh
 cd packages/cli
-npx tsx bin/compliance-swarm.ts list-skills
+npx tsx bin/compliancemaxx.ts list-skills
 npx vitest          # watch mode
 npm run typecheck
 ```

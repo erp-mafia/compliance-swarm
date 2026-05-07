@@ -1,4 +1,4 @@
-# compliance-swarm
+# compliancemaxx
 
 Multi-framework compliance orchestrator that runs five Claude skills against an
 arbitrary repository: **OSS licensing**, **OWASP ASVS v5**, **ISO 27001:2022**,
@@ -16,11 +16,11 @@ JSON dossier (artifact, 90-day retention).
 
 ## Install
 
-This package lives at `.claude/skills/compliance-swarm/` so it sits alongside
+This package lives at `.claude/skills/compliancemaxx/` so it sits alongside
 the skill knowledge bases it executes.
 
 ```bash
-cd .claude/skills/compliance-swarm
+cd .claude/skills/compliancemaxx
 npm install
 npm test
 ```
@@ -70,12 +70,12 @@ suppressions:
 ## CLI
 
 ```bash
-compliance-swarm run --mode pr --base $BASE_SHA  # PR-mode against changed files
-compliance-swarm run --mode swarm                # full hybrid + LLM
-compliance-swarm run --mode swarm --no-llm       # offline; agentic stubbed out
-compliance-swarm list-skills                     # show loaded manifests
-compliance-swarm validate-config                 # JSON-schema + suppression-expiry
-compliance-swarm sbom                            # SBOM only (oss-license skill)
+compliancemaxx run --mode pr --base $BASE_SHA  # PR-mode against changed files
+compliancemaxx run --mode swarm                # full hybrid + LLM
+compliancemaxx run --mode swarm --no-llm       # offline; agentic stubbed out
+compliancemaxx list-skills                     # show loaded manifests
+compliancemaxx validate-config                 # JSON-schema + suppression-expiry
+compliancemaxx sbom                            # SBOM only (oss-license skill)
 ```
 
 Exit codes:
@@ -91,14 +91,14 @@ Exit codes:
 Drop the example workflows into your repo:
 
 ```bash
-cp .claude/skills/compliance-swarm/examples/github-actions/*.yml .github/workflows/
+cp .claude/skills/compliancemaxx/examples/github-actions/*.yml .github/workflows/
 ```
 
 PR mode (`compliance-pr.yml`) runs on every PR, uploads SARIF to Code Scanning,
 posts a sticky comment, archives the dossier for 14 days, blocks merge when
 `severity_threshold_to_block` is met.
 
-Swarm mode (`compliance-swarm.yml`) runs nightly, on `workflow_dispatch`, and
+Swarm mode (`compliancemaxx.yml`) runs nightly, on `workflow_dispatch`, and
 on PRs labelled `compliance:full-audit`. Uses GitHub OIDC to assume an AWS role
 for Bedrock; falls back to env-resolved auth chain when the role is unset.
 
@@ -111,7 +111,7 @@ GitLab and pre-commit equivalents are in `examples/`.
 3. ISO 27001 and SOC 2 controls require `risk_id` referencing a Risk Register
    entry — without it, the suppression is **not applied**.
 4. Once `expires` passes, the orchestrator exits 1 until the rule is renewed
-   or removed. `compliance-swarm validate-config` flags expirations early.
+   or removed. `compliancemaxx validate-config` flags expirations early.
 
 ## Output interpretation
 

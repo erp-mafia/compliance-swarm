@@ -5,7 +5,7 @@
 Please do **not** open a public issue. Instead:
 
 - Email: security@erp-mafia.dev (or whichever address is canonical at time of report)
-- Or use GitHub's [private vulnerability reporting](https://github.com/erp-mafia/compliance-swarm/security/advisories/new)
+- Or use GitHub's [private vulnerability reporting](https://github.com/erp-mafia/compliancemaxx/security/advisories/new)
 
 Expect an acknowledgement within 3 business days.
 

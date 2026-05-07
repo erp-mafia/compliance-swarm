@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
-      - uses: erp-mafia/compliance-swarm@v1
+      - uses: erp-mafia/compliancemaxx@v1
         with:
           mode: pr
           base: ${{ github.event.pull_request.base.sha }}
@@ -46,7 +46,7 @@ After the first run completes, check three places:
 By default the action blocks merge on `severity ≥ high`. To start advisory-only:
 
 ```yaml
-- uses: erp-mafia/compliance-swarm@v1
+- uses: erp-mafia/compliancemaxx@v1
   with:
     mode: pr
     base: ${{ github.event.pull_request.base.sha }}
@@ -82,7 +82,7 @@ PR mode runs deterministic scanners only. Swarm mode adds LLM-driven
 agentic checks (RoPA drift, AGPL §13 evaluation, IDOR/access-control
 reasoning, ISMS Clause 4-10 review against policy markdown).
 
-Add a second workflow at `.github/workflows/compliance-swarm.yml`:
+Add a second workflow at `.github/workflows/compliancemaxx.yml`:
 
 ```yaml
 name: compliance — swarm
@@ -103,7 +103,7 @@ jobs:
         with:
           role-to-assume: ${{ vars.COMPLIANCE_BEDROCK_ROLE_ARN }}
           aws-region: eu-north-1
-      - uses: erp-mafia/compliance-swarm@v1
+      - uses: erp-mafia/compliancemaxx@v1
         with:
           mode: swarm
 ```
@@ -112,7 +112,7 @@ Either configure AWS Bedrock via OIDC (set the `COMPLIANCE_BEDROCK_ROLE_ARN`
 GitHub repo variable) or use Anthropic API directly:
 
 ```yaml
-- uses: erp-mafia/compliance-swarm@v1
+- uses: erp-mafia/compliancemaxx@v1
   with:
     mode: swarm
     llm-provider: anthropic
@@ -123,9 +123,9 @@ GitHub repo variable) or use Anthropic API directly:
 ## 6. Run locally
 
 ```sh
-npm install -g compliance-swarm
+npm install -g compliancemaxx
 cd your-repo
-compliance-swarm run --mode pr --base main --no-llm
+compliancemaxx run --mode pr --base main --no-llm
 ```
 
 Outputs `compliance.sarif`, `compliance-comment.md`, `compliance-dossier.json`

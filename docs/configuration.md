@@ -6,7 +6,7 @@ optional; defaults are sensible for most repos.
 ## Full reference
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/erp-mafia/compliance-swarm/main/packages/cli/.compliance/config.schema.yml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/erp-mafia/compliancemaxx/main/packages/cli/.compliance/config.schema.yml
 
 # Which skills to run. Default: all 5.
 enabled_skills:
@@ -72,7 +72,7 @@ enabled_skills:
 The action accepts overrides as inputs:
 
 ```yaml
-- uses: erp-mafia/compliance-swarm@v1
+- uses: erp-mafia/compliancemaxx@v1
   with:
     mode: pr
     base: ${{ github.event.pull_request.base.sha }}
@@ -85,13 +85,13 @@ Editors with YAML LSP support will validate your config against the published
 schema if you reference it:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/erp-mafia/compliance-swarm/main/packages/cli/.compliance/config.schema.yml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/erp-mafia/compliancemaxx/main/packages/cli/.compliance/config.schema.yml
 ```
 
 You can also validate from the CLI:
 
 ```sh
-compliance-swarm validate-config
+compliancemaxx validate-config
 ```
 
 This also flags **expired suppressions** — see [docs/suppressions.md](./suppressions.md).

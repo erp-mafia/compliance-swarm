@@ -1,4 +1,4 @@
-name: 'compliance-swarm'
+name: 'compliancemaxx'
 description: 'Multi-framework compliance orchestrator (OSS-license, OWASP ASVS, ISO 27001, SOC 2, GDPR) for repo and CI/CD.'
 author: 'erp-mafia'
 branding:
@@ -90,7 +90,7 @@ runs:
         restore-keys: |
           compliance-sbom-
 
-    - name: Run compliance-swarm (${{ inputs.mode }})
+    - name: Run compliancemaxx (${{ inputs.mode }})
       id: run
       shell: bash
       env:
@@ -110,7 +110,7 @@ runs:
         fi
 
         node "${{ github.action_path }}/packages/cli/node_modules/.bin/tsx" \
-          "${{ github.action_path }}/packages/cli/bin/compliance-swarm.ts" "${ARGS[@]}"
+          "${{ github.action_path }}/packages/cli/bin/compliancemaxx.ts" "${ARGS[@]}"
         EXIT=$?
 
         echo "exit-code=$EXIT" >> "$GITHUB_OUTPUT"
@@ -132,7 +132,7 @@ runs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ steps.run.outputs.sarif-path }}
-        category: compliance-swarm
+        category: compliancemaxx
       continue-on-error: true
 
     - name: Upload dossier artifact
@@ -150,7 +150,7 @@ runs:
       uses: marocchino/sticky-pull-request-comment@v2
       with:
         path: ${{ inputs.working-directory }}/compliance-comment.md
-        header: compliance-swarm-${{ inputs.mode }}
+        header: compliancemaxx-${{ inputs.mode }}
       continue-on-error: true
 
     - name: Enforce exit code
@@ -159,6 +159,6 @@ runs:
       run: |
         EXIT=${{ steps.run.outputs.exit-code }}
         if [ "$EXIT" != "0" ]; then
-          echo "::error::compliance-swarm exited with code $EXIT (${{ steps.run.outputs.findings-blocking }} blocking finding(s))"
+          echo "::error::compliancemaxx exited with code $EXIT (${{ steps.run.outputs.findings-blocking }} blocking finding(s))"
           exit "$EXIT"
         fi

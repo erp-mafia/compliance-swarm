@@ -34,7 +34,7 @@ function parseArgs(argv: string[]): CliArgs {
       if (rest[0]) args.findingId = rest[0];
       break;
     default:
-      throw new Error(`Unknown command: ${command}. Try 'compliance-swarm help'.`);
+      throw new Error(`Unknown command: ${command}. Try 'compliancemaxx help'.`);
   }
   for (let i = 0; i < rest.length; i++) {
     const a = rest[i];
@@ -60,10 +60,10 @@ function parseArgs(argv: string[]): CliArgs {
 }
 
 function printHelp(): void {
-  process.stdout.write(`compliance-swarm — multi-framework compliance orchestrator
+  process.stdout.write(`compliancemaxx — multi-framework compliance orchestrator
 
 Usage:
-  compliance-swarm <command> [flags]
+  compliancemaxx <command> [flags]
 
 Commands:
   run --mode pr|swarm [--base <sha>] [--skill <id>] [--no-llm] [--config <path>]

@@ -1,7 +1,7 @@
-# compliance-swarm
+# compliancemaxx
 
-[![CI](https://github.com/erp-mafia/compliance-swarm/actions/workflows/ci.yml/badge.svg)](https://github.com/erp-mafia/compliance-swarm/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/compliance-swarm.svg)](https://www.npmjs.com/package/compliance-swarm)
+[![CI](https://github.com/erp-mafia/compliancemaxx/actions/workflows/ci.yml/badge.svg)](https://github.com/erp-mafia/compliancemaxx/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/compliancemaxx.svg)](https://www.npmjs.com/package/compliancemaxx)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
 **Multi-framework compliance orchestrator for repos and CI/CD.** One tool runs five
@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
-      - uses: erp-mafia/compliance-swarm@v1
+      - uses: erp-mafia/compliancemaxx@v1
         with:
           mode: pr
           base: ${{ github.event.pull_request.base.sha }}
@@ -76,7 +76,7 @@ A finding tagged once but mapped to every framework it violates:
 Optional `.compliance/config.yml` at your repo root:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/erp-mafia/compliance-swarm/main/packages/cli/.compliance/config.schema.yml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/erp-mafia/compliancemaxx/main/packages/cli/.compliance/config.schema.yml
 
 severity_threshold_to_block: high     # critical | high | medium | low | info
 asvs_level: L2
@@ -118,7 +118,7 @@ See [docs/configuration.md](./docs/configuration.md) for the full reference.
 |--------------|--------------------------------------------------------------------------------------|
 | GitLab CI    | [`examples/gitlab/.gitlab-ci.yml`](./examples/gitlab/.gitlab-ci.yml)                 |
 | pre-commit   | [`examples/pre-commit/`](./examples/pre-commit/.pre-commit-config.yaml)              |
-| Local CLI    | `npm i -g compliance-swarm && compliance-swarm run --mode pr`                        |
+| Local CLI    | `npm i -g compliancemaxx && compliancemaxx run --mode pr`                        |
 
 ## Architecture
 
@@ -171,8 +171,8 @@ self-audit run, so changes that break the orchestrator's own scan get caught
 early.
 
 ```sh
-git clone https://github.com/erp-mafia/compliance-swarm
-cd compliance-swarm
+git clone https://github.com/erp-mafia/compliancemaxx
+cd compliancemaxx
 npm install
 npm test
 ```

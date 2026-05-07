@@ -3,10 +3,10 @@
 repos:
   - repo: local
     hooks:
-      - id: compliance-swarm-pr
-        name: compliance-swarm (PR mode)
+      - id: compliancemaxx-pr
+        name: compliancemaxx (PR mode)
         language: system
-        entry: bash -c 'cd .claude/skills/compliance-swarm && npx tsx bin/compliance-swarm.ts run --mode pr --no-llm'
+        entry: bash -c 'cd .claude/skills/compliancemaxx && npx tsx bin/compliancemaxx.ts run --mode pr --no-llm'
         pass_filenames: false
         # Run only when relevant files change so commits stay snappy.
         files: |
