@@ -33,7 +33,13 @@ jobs:
           # trusted-publisher flow and causes a silent 404 on publish.
 
       - name: Upgrade npm to ≥11.5.1 (required for trusted-publisher OIDC)
-        run: npm install -g npm@latest
+        run: |
+          # Node 22 LTS ships with npm 10; trusted-publisher OIDC needs ≥11.5.1.
+          # `npm install -g npm@latest` self-upgrade is flaky (known bug); use
+          # corepack which is the supported way to switch Node's bundled tools.
+          corepack enable
+          corepack prepare npm@latest --activate
+          npm --version
 
       - run: npm ci
 
