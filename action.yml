@@ -147,7 +147,7 @@ runs:
 
     - name: Post sticky PR comment
       if: ${{ inputs.post-comment == 'true' && github.event_name == 'pull_request' && always() }}
-      uses: marocchino/sticky-pull-request-comment@v2
+      uses: marocchino/sticky-pull-request-comment@v3
       with:
         path: ${{ inputs.working-directory }}/compliance-comment.md
         header: compliance-swarm-${{ inputs.mode }}
