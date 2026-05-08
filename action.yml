@@ -61,6 +61,9 @@ outputs:
   dossier-path:
     description: 'Absolute path to the JSON dossier.'
     value: ${{ steps.run.outputs.dossier-path }}
+  comment-path:
+    description: 'Absolute path to the human-readable markdown summary.'
+    value: ${{ steps.run.outputs.comment-path }}
   findings-total:
     description: 'Total finding count.'
     value: ${{ steps.run.outputs.findings-total }}
@@ -133,6 +136,7 @@ runs:
         echo "exit-code=$EXIT" >> "$GITHUB_OUTPUT"
         echo "sarif-path=$PWD/compliance.sarif" >> "$GITHUB_OUTPUT"
         echo "dossier-path=$PWD/compliance-dossier.json" >> "$GITHUB_OUTPUT"
+        echo "comment-path=$PWD/compliance-comment.md" >> "$GITHUB_OUTPUT"
 
         if [ -f compliance-dossier.json ]; then
           TOTAL=$(node -e "console.log(JSON.parse(require('fs').readFileSync('compliance-dossier.json','utf8')).summary.total)")
@@ -160,7 +164,9 @@ runs:
         path: |
           ${{ steps.run.outputs.dossier-path }}
           ${{ steps.run.outputs.sarif-path }}
-        retention-days: ${{ inputs.mode == 'swarm' && 90 || 14 }}
+          ${{ steps.run.outputs.comment-path }}
+        retention-days: ${{ inputs.mode == 'audit' && 90 || 14 }}
+        if-no-files-found: warn
 
     - name: Post sticky PR comment
       if: ${{ inputs.post-comment == 'true' && github.event_name == 'pull_request' && always() }}
